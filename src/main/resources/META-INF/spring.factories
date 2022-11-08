@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.hyf.cloudnative.remoting.mesh.config.CloudNativeRemotingAutoConfiguration

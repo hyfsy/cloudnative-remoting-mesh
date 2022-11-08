@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package remoting.v1;
+
+import "google/protobuf/any.proto";
+
+option java_multiple_files = true;
+option java_package = "com.hyf.cloudnative.remoting.mesh.proxy.grpc.generate";
+option java_outer_classname = "RemotingApiProto";
+
+message Message {
+  int32 id = 1;
+  bool req = 2;
+  bool event = 3;
+  bytes class_name = 4;
+  bytes method_name = 5;
+  bytes arg_class_name = 6;
+  bytes payload_class_name = 7;
+  google.protobuf.Any payload = 8;
+  map<string, string> metadata = 9;
+}
+
+service RemotingApi {
+  rpc Request(Message) returns (Message);
+  rpc BiStream(stream Message) returns (stream Message);
+}

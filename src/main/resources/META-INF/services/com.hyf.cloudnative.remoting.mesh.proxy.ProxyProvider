@@ -1,0 +1,2 @@
+com.hyf.cloudnative.remoting.mesh.proxy.http.HttpProxyProvider
+com.hyf.cloudnative.remoting.mesh.proxy.grpc.GrpcProxyProvider
