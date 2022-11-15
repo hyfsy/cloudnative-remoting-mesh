@@ -4,7 +4,7 @@ import com.hyf.cloudnative.remoting.mesh.RequestWay;
 
 public class ClientConstants {
 
-    public static final String PROPERTIES_PREFIX = "bcx.cloudnative.remoting";
+    public static final String PROPERTIES_PREFIX = "cloudnative.remoting.mesh";
 
     public static final RequestWay DEFAULT_REQUEST_WAY = RequestWay.GRPC;
 
