@@ -22,6 +22,10 @@
 
 
 
+> 用例参考：https://github.com/hyfsy/mesh-demo
+
+
+
 
 
 
@@ -150,7 +154,7 @@ public class DemoConsumerController {
 文件路径：`C:\Windows\System32\drivers\etc\hosts`
 
 ```
-# service-demo-provider为生产端服务名，default为k8s命名空间名称，cluster.local为k8s集群域名
+# service-demo-provider为k8s生产者端服务名，default为k8s命名空间名称，cluster.local为k8s集群域名
 127.0.0.1 service-demo-provider.default.svc.cluster.local
 ```
 
