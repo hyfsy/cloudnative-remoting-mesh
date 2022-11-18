@@ -19,6 +19,7 @@ public class GrpcServerConfiguration {
     private RemotingProperties properties;
 
     @Bean // not use bean lifecycle method automatically
+    @ConditionalOnMissingBean
     public GrpcServer grpcServer(ObjectProvider<List<BindableService>> bindableServicesProvider) {
         GrpcServer grpcServer = new GrpcServer(properties.getGrpc().getServer());
         bindableServicesProvider.ifAvailable(bindableServices -> grpcServer.getBindableServices().addAll(bindableServices));
