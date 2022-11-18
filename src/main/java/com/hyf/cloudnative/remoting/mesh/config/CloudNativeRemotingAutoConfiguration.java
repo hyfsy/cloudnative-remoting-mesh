@@ -1,8 +1,11 @@
 package com.hyf.cloudnative.remoting.mesh.config;
 
 import com.hyf.cloudnative.remoting.mesh.RemotingProperties;
+import com.hyf.cloudnative.remoting.mesh.proxy.grpc.RemotingApiAcceptor;
+import com.hyf.cloudnative.remoting.mesh.proxy.grpc.ServerHandler;
 import com.hyf.cloudnative.remoting.mesh.utils.ApplicationUtils;
 import com.hyf.cloudnative.remoting.mesh.utils.ServiceHostUtils;
+import io.grpc.BindableService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,5 +24,10 @@ public class CloudNativeRemotingAutoConfiguration {
     @Bean
     public ApplicationUtils applicationUtils() {
         return new ApplicationUtils();
+    }
+
+    @Bean
+    public BindableService remotingApiAcceptor() {
+        return new RemotingApiAcceptor(new ServerHandler());
     }
 }

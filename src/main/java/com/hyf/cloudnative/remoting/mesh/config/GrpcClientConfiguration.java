@@ -7,6 +7,7 @@ import com.hyf.cloudnative.remoting.mesh.proxy.http.interceptor.RequestMappingAn
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import javax.annotation.Resource;
 
@@ -23,11 +24,13 @@ public class GrpcClientConfiguration {
     }
 
     @Bean
+    @Order(-100)
     public ArgumentAnnotationRequestInterceptor argumentAnnotationRequestInterceptor() {
         return new ArgumentAnnotationRequestInterceptor();
     }
 
     @Bean
+    @Order(-110)
     public RequestMappingAnnotationParser requestMappingAnnotationParser() {
         return new RequestMappingAnnotationParser();
     }

@@ -1,12 +1,13 @@
 package com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.server;
 
-import com.hyf.cloudnative.remoting.mesh.proxy.grpc.RemotingApiAcceptor;
-import com.hyf.cloudnative.remoting.mesh.proxy.grpc.ServerHandler;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.NamedThreadFactory;
+import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -17,6 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @date 2022/10/01
  */
 public class GrpcServer {
+
+    private final List<BindableService> bindableServices = new ArrayList<>();
 
     private final AtomicBoolean stopped = new AtomicBoolean(true);
 
@@ -47,11 +50,11 @@ public class GrpcServer {
                 new LinkedBlockingQueue<>(grpcServerConfig.getThreadPoolQueueSize()),
                 new NamedThreadFactory("grpc-server-executor", grpcServerConfig.getThreadPoolSize()));
 
-        server = ServerBuilder.forPort(grpcServerConfig.getListenPort())
+        ServerBuilder<?> serverBuilder = ServerBuilder.forPort(grpcServerConfig.getListenPort())
                 .executor(grpcExecutor)
-                .maxInboundMessageSize(grpcServerConfig.getMaxInboundMessageSize())
-                .addService(new RemotingApiAcceptor(new ServerHandler()))
-                .build();
+                .maxInboundMessageSize(grpcServerConfig.getMaxInboundMessageSize());
+        bindableServices.forEach(serverBuilder::addService);
+        server = serverBuilder.build();
 
         try {
             server.start();
@@ -70,6 +73,10 @@ public class GrpcServer {
         if (server != null) {
             server.shutdownNow();
         }
+    }
+
+    public List<BindableService> getBindableServices() {
+        return bindableServices;
     }
 
     public boolean isStopped() {

@@ -3,22 +3,18 @@ package com.hyf.cloudnative.remoting.mesh.proxy.http.interceptor;
 import com.hyf.cloudnative.remoting.mesh.proxy.InvocationContext;
 import com.hyf.cloudnative.remoting.mesh.proxy.http.Request;
 import com.hyf.cloudnative.remoting.mesh.proxy.http.RequestInterceptor;
-import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Priority;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-@Component
-@Priority(-10)
 public class ArgumentAnnotationRequestInterceptor implements RequestInterceptor {
 
     private static final Class<?>[] httpClasses = {PathVariable.class, RequestParam.class, RequestHeader.class}; // not support RequestPart.class, MatrixVariable.class

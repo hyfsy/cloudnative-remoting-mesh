@@ -7,17 +7,13 @@ import com.hyf.cloudnative.remoting.mesh.proxy.http.WebUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Priority;
 import java.lang.reflect.Method;
 import java.util.*;
 
-@Component
-@Priority(-11)
 public class RequestMappingAnnotationParser implements RequestInterceptor {
 
     @Override
