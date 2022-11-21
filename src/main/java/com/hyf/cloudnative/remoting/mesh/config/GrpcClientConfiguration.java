@@ -24,13 +24,13 @@ public class GrpcClientConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public ArgumentAnnotationRequestInterceptor argumentAnnotationRequestInterceptor() {
-        return new ArgumentAnnotationRequestInterceptor();
+    public RequestMappingAnnotationParser requestMappingAnnotationParser() {
+        return new RequestMappingAnnotationParser();
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public RequestMappingAnnotationParser requestMappingAnnotationParser() {
-        return new RequestMappingAnnotationParser();
+    public ArgumentAnnotationRequestInterceptor argumentAnnotationRequestInterceptor() {
+        return new ArgumentAnnotationRequestInterceptor();
     }
 }
