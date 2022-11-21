@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Priority;
 import java.lang.reflect.Method;
 import java.util.*;
 
+@Priority(-500)
 public class RequestMappingAnnotationParser implements RequestInterceptor {
 
     @Override
