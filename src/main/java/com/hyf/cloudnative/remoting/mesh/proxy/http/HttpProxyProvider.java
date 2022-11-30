@@ -5,6 +5,7 @@ import com.hyf.cloudnative.remoting.mesh.proxy.AbstractFallbackProxyProvider;
 import com.hyf.cloudnative.remoting.mesh.proxy.ClientConfig;
 import com.hyf.cloudnative.remoting.mesh.proxy.InvocationContext;
 import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 
@@ -12,7 +13,7 @@ import java.lang.reflect.InvocationHandler;
 
 public class HttpProxyProvider extends AbstractFallbackProxyProvider {
 
-    private static final RestTemplate restTemplate = new RestTemplateBuilder().build();
+    private static final RestTemplate DEFAULT_REST_TEMPLATE = new RestTemplateBuilder().build();
 
     @Override
     public RequestWay requestWay() {
@@ -32,7 +33,13 @@ public class HttpProxyProvider extends AbstractFallbackProxyProvider {
         return prefix + "://" + clientConfig.generateServiceHost(beanFactory) + ":" + port;
     }
 
-    private RestTemplate getRestTemplate(BeanFactory beanFactory) {
+    protected RestTemplate getRestTemplate(BeanFactory beanFactory) {
+        RestTemplate restTemplate;
+        try {
+            restTemplate = beanFactory.getBean(RestTemplate.class);
+        } catch (NoSuchBeanDefinitionException ignored) {
+            restTemplate = DEFAULT_REST_TEMPLATE;
+        }
         return restTemplate;
     }
 }
