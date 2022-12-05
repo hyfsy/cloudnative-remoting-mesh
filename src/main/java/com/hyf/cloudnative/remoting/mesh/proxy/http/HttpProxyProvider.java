@@ -16,7 +16,7 @@ public class HttpProxyProvider extends AbstractFallbackProxyProvider {
     private static final RestTemplate DEFAULT_REST_TEMPLATE = new RestTemplateBuilder().build();
 
     @Override
-    public RequestWay requestWay() {
+    public String requestWay() {
         return RequestWay.HTTP;
     }
 

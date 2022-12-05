@@ -10,30 +10,30 @@ public class ClientConfig {
 
     private Class<?> type;
     private String serviceName;
-    private int port;
-    private boolean tlsEnable = ClientConstants.DEFAULT_TLS_ENABLE;
+    private int port = -1;
+    private boolean tlsEnable;
     private String namespace;
     private String clusterDomain;
-    private RequestWay requestWay;
+    private String requestWay;
     private Class<?> fallback;
     private Class<?> fallbackFactory;
 
-    public void fillDefaultValue() {
-        if (requestWay == null) {
-            requestWay = ClientConstants.DEFAULT_REQUEST_WAY;
-        }
-        if (port <= 0) {
-            port = requestWay == RequestWay.HTTP ?
-                    (tlsEnable ? ClientConstants.DEFAULT_HTTPS_PORT : ClientConstants.DEFAULT_HTTP_PORT) :
-                    ClientConstants.DEFAULT_GRPC_PORT;
-        }
-//        // properties -> default, here no need set default value
-//        if (!StringUtils.hasText(namespace)) {
-//            namespace = ClientConstants.DEFAULT_NAMESPACE;
-//        }
-//        if (!StringUtils.hasText(clusterDomain)) {
-//            clusterDomain = ClientConstants.DEFAULT_CLUSTER_DOMAIN;
-//        }
+    public ClientConfig() {
+        this.fillDefaultValue(); // 填充默认值
+    }
+
+    private void fillDefaultValue() {
+        requestWay = ClientConstants.DEFAULT_REQUEST_WAY;
+        tlsEnable = ClientConstants.DEFAULT_TLS_ENABLE;
+        namespace = ClientConstants.DEFAULT_NAMESPACE;
+        clusterDomain = ClientConstants.DEFAULT_CLUSTER_DOMAIN;
+        setDefaultPortUseRequestWay(requestWay);
+    }
+
+    public void setDefaultPortUseRequestWay(String requestWay) {
+        port = RequestWay.HTTP.equalsIgnoreCase(requestWay) ?
+                (tlsEnable ? ClientConstants.DEFAULT_HTTPS_PORT : ClientConstants.DEFAULT_HTTP_PORT) :
+                ClientConstants.DEFAULT_GRPC_PORT;
     }
 
     public void validate() {
@@ -94,11 +94,11 @@ public class ClientConfig {
         this.clusterDomain = clusterDomain;
     }
 
-    public RequestWay getRequestWay() {
+    public String getRequestWay() {
         return requestWay;
     }
 
-    public void setRequestWay(RequestWay requestWay) {
+    public void setRequestWay(String requestWay) {
         this.requestWay = requestWay;
     }
 

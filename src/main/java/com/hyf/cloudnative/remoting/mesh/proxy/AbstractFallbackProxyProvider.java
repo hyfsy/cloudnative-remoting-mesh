@@ -14,13 +14,13 @@ public abstract class AbstractFallbackProxyProvider implements ProxyProvider {
         InvocationHandler invocationHandler = createInvocationHandler(beanFactory, clientConfig);
 
         // fallback
-        if (clientConfig.getFallback() != void.class) {
+        if (clientConfig.getFallback() != null && clientConfig.getFallback() != void.class) {
             Object fallbackInstance = getBeanFromContext(beanFactory, clientConfig.getFallback(), clientConfig.getType());
             FallbackFactory.Default<Object> factory = new FallbackFactory.Default<>(fallbackInstance);
             invocationHandler = new FallbackInvocationHandler(invocationHandler, factory);
         }
         // fallback factory
-        else if (clientConfig.getFallbackFactory() != void.class) {
+        else if (clientConfig.getFallbackFactory() != null && clientConfig.getFallbackFactory() != void.class) {
             FallbackFactory<?> fallbackFactoryInstance = getBeanFromContext(beanFactory, clientConfig.getFallbackFactory(), FallbackFactory.class);
             invocationHandler = new FallbackInvocationHandler(invocationHandler, fallbackFactoryInstance);
         }

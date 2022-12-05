@@ -1,0 +1,18 @@
+{
+  "groups": [],
+  "hints": [
+    {
+      "name": "cloudnative.remoting.mesh.request-way",
+      "values": [
+        {
+          "value": "http",
+          "description": "generate http client."
+        },
+        {
+          "value": "grpc",
+          "description": "generate grpc client."
+        }
+      ]
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import org.springframework.util.StringUtils;
 
 public class ServiceHostUtils {
 
-    private static volatile RemotingProperties properties;
+    private final RemotingProperties properties;
 
     public ServiceHostUtils(RemotingProperties properties) {
         this.properties = properties;

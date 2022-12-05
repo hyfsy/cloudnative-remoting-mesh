@@ -9,9 +9,11 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties(ClientConstants.PROPERTIES_PREFIX)
 public class RemotingProperties {
 
-    public String namespace = ClientConstants.DEFAULT_NAMESPACE;
+    public String namespace;
 
-    public String clusterDomain = ClientConstants.DEFAULT_CLUSTER_DOMAIN;
+    public String clusterDomain;
+
+    public String requestWay;
 
     public final Grpc grpc = new Grpc();
 
@@ -29,6 +31,14 @@ public class RemotingProperties {
 
     public void setClusterDomain(String clusterDomain) {
         this.clusterDomain = clusterDomain;
+    }
+
+    public String getRequestWay() {
+        return requestWay;
+    }
+
+    public void setRequestWay(String requestWay) {
+        this.requestWay = requestWay;
     }
 
     public static class Grpc {

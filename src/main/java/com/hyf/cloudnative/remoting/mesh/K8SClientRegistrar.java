@@ -124,15 +124,9 @@ public class K8SClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
                 ? (ConfigurableBeanFactory) registry : null;
         K8SClientFactoryBean factoryBean = new K8SClientFactoryBean();
         factoryBean.setBeanFactory(beanFactory);
-        factoryBean.setServiceName(getServiceHost(beanFactory, attributes));
+        factoryBean.setEnvironment(environment);
         factoryBean.setType(clazz);
-        factoryBean.setPort(getServicePort(beanFactory, attributes));
-        factoryBean.setTlsEnable((Boolean) attributes.get("tlsEnable"));
-        factoryBean.setNamespace((String) attributes.get("namespace"));
-        factoryBean.setClusterDomain((String) attributes.get("clusterDomain"));
-        factoryBean.setRequestWay((RequestWay) attributes.get("requestWay"));
-        factoryBean.setFallback((Class<?>) attributes.get("fallback"));
-        factoryBean.setFallbackFactory((Class<?>) attributes.get("fallbackFactory"));
+        factoryBean.setLazyAttributes(attributes);
 
         BeanDefinitionBuilder definition = BeanDefinitionBuilder.genericBeanDefinition(clazz, factoryBean::getObject);
         definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
@@ -143,32 +137,5 @@ public class K8SClientRegistrar implements ImportBeanDefinitionRegistrar, Resour
 
         BeanDefinitionHolder holder = new BeanDefinitionHolder(beanDefinition, className);
         BeanDefinitionReaderUtils.registerBeanDefinition(holder, registry);
-    }
-
-    private String getServiceHost(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
-        if (StringUtils.hasText((String) attributes.get("value"))) {
-            return resolve(beanFactory, (String) attributes.get("value"));
-        } else {
-            return resolve(beanFactory, (String) attributes.get("name"));
-        }
-    }
-
-    private Integer getServicePort(ConfigurableBeanFactory beanFactory, Map<String, Object> attributes) {
-        String port = ((String) attributes.get("port"));
-        if (!StringUtils.hasText(port)) {
-            return -1;
-        }
-        try {
-            return Integer.parseInt(resolve(beanFactory, port.trim()));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Client port is invalid: " + attributes.get("port"));
-        }
-    }
-
-    private String resolve(ConfigurableBeanFactory beanFactory, String value) {
-        if (StringUtils.hasText(value)) {
-            return this.environment.resolvePlaceholders(value);
-        }
-        return value;
     }
 }

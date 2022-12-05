@@ -1,18 +1,9 @@
 package com.hyf.cloudnative.remoting.mesh;
 
-public enum RequestWay {
+public class RequestWay {
 
-    HTTP("http"),
-    GRPC("grpc"),
-    ;
+    public static final String HTTP = "http";
 
-    private final String name;
+    public static final String GRPC = "grpc";
 
-    RequestWay(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
 }

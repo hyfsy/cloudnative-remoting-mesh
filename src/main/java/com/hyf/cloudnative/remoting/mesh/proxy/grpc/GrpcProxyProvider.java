@@ -12,7 +12,7 @@ import java.lang.reflect.InvocationHandler;
 public class GrpcProxyProvider extends AbstractFallbackProxyProvider {
 
     @Override
-    public RequestWay requestWay() {
+    public String requestWay() {
         return RequestWay.GRPC;
     }
 

@@ -32,6 +32,9 @@ public class ConnectionManager {
     public ConnectionManager(GrpcClientConfig grpcClientConfig) {
         this.grpcClientConfig = grpcClientConfig;
         this.heartbeatExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("hotrefresh-grpc-connection-heartbeat-executor", 1));
+    }
+
+    public void start() {
         this.heartbeatExecutor.scheduleWithFixedDelay(() -> {
             try {
                 healthCheck();

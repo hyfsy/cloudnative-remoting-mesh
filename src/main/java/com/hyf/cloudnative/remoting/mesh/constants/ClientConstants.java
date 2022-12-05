@@ -6,7 +6,9 @@ public class ClientConstants {
 
     public static final String PROPERTIES_PREFIX = "cloudnative.remoting.mesh";
 
-    public static final RequestWay DEFAULT_REQUEST_WAY = RequestWay.GRPC;
+    // --------------------------- default value ---------------------------
+
+    public static final String DEFAULT_REQUEST_WAY = RequestWay.HTTP;
 
     public static final int DEFAULT_HTTP_PORT = 8080;
 
