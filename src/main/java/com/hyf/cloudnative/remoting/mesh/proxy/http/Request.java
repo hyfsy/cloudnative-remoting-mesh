@@ -2,14 +2,15 @@ package com.hyf.cloudnative.remoting.mesh.proxy.http;
 
 import org.springframework.http.HttpMethod;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class Request {
 
-    private String url = "";
-    private HttpMethod httpMethod = HttpMethod.GET;
+    private String url;
+    private HttpMethod httpMethod;
     private Map<String, List<String>> headers;
     private Map<String, List<String>> params;
     private Object body;
@@ -31,6 +32,9 @@ public class Request {
     }
 
     public Map<String, List<String>> getHeaders() {
+        if (headers == null) {
+            headers = new HashMap<>();
+        }
         return headers;
     }
 
@@ -39,6 +43,9 @@ public class Request {
     }
 
     public Map<String, List<String>> getParams() {
+        if (params == null) {
+            params = new HashMap<>();
+        }
         return params;
     }
 

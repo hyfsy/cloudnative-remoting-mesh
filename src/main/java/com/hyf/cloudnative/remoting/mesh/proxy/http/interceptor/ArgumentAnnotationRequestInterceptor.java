@@ -3,23 +3,30 @@ package com.hyf.cloudnative.remoting.mesh.proxy.http.interceptor;
 import com.hyf.cloudnative.remoting.mesh.proxy.InvocationContext;
 import com.hyf.cloudnative.remoting.mesh.proxy.http.Request;
 import com.hyf.cloudnative.remoting.mesh.proxy.http.RequestInterceptor;
+import com.hyf.cloudnative.remoting.mesh.proxy.http.file.MultipartFileAdapter;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.util.MultiValueMapAdapter;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Priority;
+import javax.servlet.http.Part;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+@Deprecated
 @Priority(-400)
 public class ArgumentAnnotationRequestInterceptor implements RequestInterceptor {
 
-    private static final Class<?>[] httpClasses = {PathVariable.class, RequestParam.class, RequestHeader.class}; // not support RequestPart.class, MatrixVariable.class
+    private static final Class<?>[] httpClasses = {PathVariable.class, RequestParam.class, RequestHeader.class, CookieValue.class, RequestPart.class}; // not support RequestPart.class, MatrixVariable.class
 
     @Override
     public void process(Request request, Object proxy, Method method, Object[] args, InvocationContext<RestTemplate> context) {
@@ -42,6 +49,17 @@ public class ArgumentAnnotationRequestInterceptor implements RequestInterceptor 
                     }
                 }
             }
+            // TODO 检查名称必须存在
+            if (containsAnnotation(parameterAnnotation, RequestPart.class)) {
+                if (parameterTypes[i] instanceof ParameterizedType) {
+                    ParameterizedType parameterType = (ParameterizedType) parameterTypes[i];
+                    if (parameterType.getRawType() == Map.class) {
+                        if (parameterType.getActualTypeArguments()[0] != String.class) {
+                            throw new IllegalArgumentException("Map key must be a String: " + parameterType.getActualTypeArguments()[0].getTypeName());
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -50,6 +68,9 @@ public class ArgumentAnnotationRequestInterceptor implements RequestInterceptor 
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 
         Object body = null;
+        boolean hasMultipart = false;
+        Object multipart = null;
+        Map<String, List<MultipartFile>> multipartFilesMap = null;
 
 //        Map<String, String> pathVariablesValueMap = new HashMap<>();
 
@@ -70,62 +91,67 @@ public class ArgumentAnnotationRequestInterceptor implements RequestInterceptor 
                     PathVariable pathVariableAnnotation = PathVariable.class.cast(annotation);
                     String value = pathVariableAnnotation.value();
                     Assert.hasText(value, "@PathVariable value() must has text");
-                    request.setUrl(request.getUrl().replaceFirst("\\{" + value + "}", String.valueOf(args[i])));
+                    request.setUrl(request.getUrl().replaceFirst("\\{" + value + "}", convert(args[i])));
                 } else if (annotation.annotationType() == RequestHeader.class) {
                     RequestHeader requestHeaderAnnotation = RequestHeader.class.cast(annotation);
                     String value = requestHeaderAnnotation.value();
                     Assert.hasText(value, "@RequestHeader value() must has text");
-                    request.getHeaders().put(value, Arrays.asList(String.valueOf(args[i])));
+                    request.getHeaders().put(value, Arrays.asList(convert(args[i])));
                 } else if (annotation.annotationType() == RequestParam.class) {
                     RequestParam requestParamAnnotation = RequestParam.class.cast(annotation);
                     String key = requestParamAnnotation.value();
                     Assert.hasText(key, "@RequestParam value() must has text");
 
-                    List<String> params = new ArrayList<>();
-
-                    if (args[i] instanceof Iterable) {
-                        for (Object o : ((Iterable<?>) args[i])) {
-                            params.add(String.valueOf(o));
-                        }
-                        request.getParams().put(key, params);
-                    } else if (args[i] instanceof Object[]) {
-                        for (Object o : ((Object[]) args[i])) {
-                            params.add(String.valueOf(o));
-                        }
-                        request.getParams().put(key, params);
-                    } else if (args[i] instanceof Map) {
-
+                    if (args[i] instanceof Map) {
                         for (Map.Entry<?, ?> entry : ((Map<?, ?>) args[i]).entrySet()) {
                             Object k = entry.getKey();
                             Object v = entry.getValue();
 
                             List<String> mapParams = new ArrayList<>();
-
-                            String mapKey = String.valueOf(k);
-
-                            if (v instanceof Iterable) {
-                                for (Object o : ((Iterable<?>) v)) {
-                                    mapParams.add(String.valueOf(o));
-                                }
-                            } else if (v instanceof Object[]) {
-                                for (Object o : ((Object[]) v)) {
-                                    mapParams.add(String.valueOf(o));
-                                }
-                            } else {
-                                mapParams.add(String.valueOf(v));
-                            }
-
+                            String mapKey = convert(k);
+                            iterateObject(v, o -> mapParams.add(convert(o)));
                             request.getParams().put(mapKey, mapParams);
                         }
-                    } else {
-                        params.add(String.valueOf(args[i]));
+                    }
+                    else {
+                        List<String> params = new ArrayList<>();
+                        iterateObject(args[i], o -> params.add(convert(o)));
                         request.getParams().put(key, params);
                     }
+                } else if (annotation.annotationType() == CookieValue.class) {
+                    CookieValue cookieValueAnnotation = CookieValue.class.cast(annotation);
+                    String cookieName = cookieValueAnnotation.value();
+                    request.getHeaders().putIfAbsent(HttpHeaders.COOKIE, new ArrayList<>());
+                    request.getHeaders().get(HttpHeaders.COOKIE).add(cookieName + "=" + convert(args[i]));
+                } else if (annotation.annotationType() == RequestPart.class) {
+                    hasMultipart = true;
+                    RequestPart requestPartAnnotation = RequestPart.class.cast(annotation);
+                    String partName = requestPartAnnotation.value();
+                    Object arg = args[i];
+                    if (multipartFilesMap == null) {
+                        multipartFilesMap = new HashMap<>();
+                    }
+                    addMultipartFiles(multipartFilesMap, partName, arg);
                 }
             }
         }
 
-        request.setBody(body);
+        if (hasMultipart && multipartFilesMap != null) {
+            // origin
+            // multipart = FormDataParser.parse(partName, arg);
+
+            // SpringMVC
+            // FormHttpMessageConverter
+            Map<String, List<Resource>> tempMultipartFilesMap = new HashMap<>();
+            for (String name : multipartFilesMap.keySet()) {
+                tempMultipartFilesMap.put(name, multipartFilesMap.get(name).stream().map(MultipartFile::getResource).collect(Collectors.toList()));
+            }
+            multipart = new MultiValueMapAdapter<>(tempMultipartFilesMap);
+            request.setBody(multipart);
+        }
+        else {
+            request.setBody(body);
+        }
     }
 
     private boolean containsAnnotation(Annotation[] annotations, Class<?> clazz) {
@@ -146,5 +172,36 @@ public class ArgumentAnnotationRequestInterceptor implements RequestInterceptor 
             }
         }
         return false;
+    }
+
+    private String convert(Object o) {
+        return String.valueOf(o);
+    }
+
+    private void addMultipartFiles(Map<String, List<MultipartFile>> multipartFilesMap, String partName, Object arg) {
+        multipartFilesMap.putIfAbsent(partName, new ArrayList<>());
+
+        iterateObject(arg, o -> {
+            if (o instanceof Part) {
+                multipartFilesMap.get(partName).add(new MultipartFileAdapter((Part) o));
+            }
+            else if (o instanceof MultipartFile) {
+                multipartFilesMap.get(partName).add((MultipartFile) o);
+            }
+        });
+    }
+
+    private void iterateObject(Object o, Consumer<Object> iteratorConsumer) {
+        if (o instanceof Iterable) {
+            for (Object item : ((Iterable<?>) o)) {
+                iteratorConsumer.accept(item);
+            }
+        } else if (o instanceof Object[]) {
+            for (Object item : ((Object[]) o)) {
+                iteratorConsumer.accept(item);
+            }
+        } else {
+            iteratorConsumer.accept(o);
+        }
     }
 }

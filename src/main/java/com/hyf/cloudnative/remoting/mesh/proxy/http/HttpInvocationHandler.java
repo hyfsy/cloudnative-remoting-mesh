@@ -5,27 +5,23 @@ import com.hyf.cloudnative.remoting.mesh.proxy.AbstractRemotingInvocationHandler
 import com.hyf.cloudnative.remoting.mesh.utils.ApplicationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.ClientHttpRequest;
+import org.springframework.http.HttpEntity;
+import org.springframework.util.MultiValueMapAdapter;
 import org.springframework.web.client.HttpMessageConverterExtractor;
-import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.URLEncoder;
 import java.util.*;
 
-/**
- * TODO
- *   annotation parse cache
- */
 public class HttpInvocationHandler extends AbstractRemotingInvocationHandler<RestTemplate> {
 
     private static final Logger log = LoggerFactory.getLogger(HttpInvocationHandler.class);
 
     public HttpInvocationHandler(InvocationContext<RestTemplate> invocationContext) {
         super(invocationContext);
+        RequestAnnotationMetadataUtils.parse(invocationContext.getType());
     }
 
     @Override
@@ -69,14 +65,9 @@ public class HttpInvocationHandler extends AbstractRemotingInvocationHandler<Res
         }
 
         // execute
+        HttpEntity<?> httpEntity = new HttpEntity<>(request.getBody(), new MultiValueMapAdapter<>(request.getHeaders()));
         return restTemplate.execute(url, request.getHttpMethod(),
-                new HeaderAndBodySetCallback(restTemplate.httpEntityCallback(request.getBody(), method.getReturnType())) {
-
-                    @Override
-                    protected Map<String, List<String>> getHeaders() {
-                        return request.getHeaders();
-                    }
-                },
+                restTemplate.httpEntityCallback(httpEntity, method.getReturnType()),
                 new HttpMessageConverterExtractor<>(method.getReturnType(), restTemplate.getMessageConverters()), params /* uriVariables */);
     }
 
@@ -91,22 +82,5 @@ public class HttpInvocationHandler extends AbstractRemotingInvocationHandler<Res
         } catch (UnsupportedEncodingException e) {
             return url;
         }
-    }
-
-    private abstract static class HeaderAndBodySetCallback implements RequestCallback {
-
-        private final RequestCallback delegate;
-
-        public HeaderAndBodySetCallback(RequestCallback delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void doWithRequest(ClientHttpRequest request) throws IOException {
-            request.getHeaders().putAll(getHeaders()); // header set
-            delegate.doWithRequest(request); // body set
-        }
-
-        protected abstract Map<String, List<String>> getHeaders();
     }
 }

@@ -6,6 +6,7 @@ import com.hyf.cloudnative.remoting.mesh.proxy.http.RequestInterceptor;
 import com.hyf.cloudnative.remoting.mesh.proxy.http.WebUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +16,7 @@ import javax.annotation.Priority;
 import java.lang.reflect.Method;
 import java.util.*;
 
+@Deprecated
 @Priority(-500)
 public class RequestMappingAnnotationParser implements RequestInterceptor {
 
@@ -83,22 +85,24 @@ public class RequestMappingAnnotationParser implements RequestInterceptor {
             params.putAll(parseList(classAnnotation.params()));
         }
 
-        request.setParams(params);
+        if (!params.isEmpty()) {
+            request.getParams().putAll(params);
+        }
     }
 
     private void setHeaders(Request request, RequestMapping classAnnotation, RequestMapping methodAnnotation) {
         Map<String, List<String>> headers = new HashMap<>();
 
         if (methodAnnotation != null && methodAnnotation.produces().length > 0) {
-            headers.put("Accept", Arrays.asList(methodAnnotation.produces()));
+            headers.put(HttpHeaders.ACCEPT, Arrays.asList(methodAnnotation.produces()));
         } else if (classAnnotation != null && classAnnotation.produces().length > 0) {
-            headers.put("Accept", Arrays.asList(classAnnotation.produces()));
+            headers.put(HttpHeaders.ACCEPT, Arrays.asList(classAnnotation.produces()));
         }
 
         if (methodAnnotation != null && methodAnnotation.consumes().length > 0) {
-            headers.put("Content-Type", Arrays.asList(methodAnnotation.consumes()));
+            headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(methodAnnotation.consumes()));
         } else if (classAnnotation != null && classAnnotation.consumes().length > 0) {
-            headers.put("Content-Type", Arrays.asList(classAnnotation.consumes()));
+            headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(classAnnotation.consumes()));
         }
 
         if (methodAnnotation != null && methodAnnotation.headers().length > 0) {
@@ -107,7 +111,9 @@ public class RequestMappingAnnotationParser implements RequestInterceptor {
             headers.putAll(parseList(classAnnotation.headers()));
         }
 
-        request.setHeaders(headers);
+        if (!headers.isEmpty()) {
+            request.getHeaders().putAll(headers);
+        }
     }
 
     private Map<String, List<String>> parseList(String[] params) {
