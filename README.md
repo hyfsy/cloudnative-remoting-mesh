@@ -58,7 +58,7 @@
 @K8SClient(
     name = "${k8s.service.demo.name}", // 必填，为k8s服务名称
     port = "${k8s.service.demo.port}", // 可选，为k8s服务端口，http默认8080，grpc默认5443
-    requestWay = RequestWay.HTTP 	   // 请求方式为http方式，默认grpc
+    requestWay = RequestWay.HTTP 	   // 请求方式为http方式，默认http
 )
 @RequestMapping("user")
 public interface TestHttpClient {
