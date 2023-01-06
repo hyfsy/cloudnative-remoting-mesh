@@ -31,8 +31,9 @@ public class RequestAnnotationMetadataUtils {
 
     static {
         addMetadataProcessor(new RequestMappingMetadataProcessor());
-        addMetadataProcessor(new RequestParamMetadataProcessor());
+        addMetadataProcessor(new MatrixVariableMetadataProcessor());
         addMetadataProcessor(new PathVariableMetadataProcessor());
+        addMetadataProcessor(new RequestParamMetadataProcessor());
         addMetadataProcessor(new RequestHeaderMetadataProcessor());
         addMetadataProcessor(new CookieValueMetadataProcessor());
         addMetadataProcessor(new RequestPartMetadataProcessor());
@@ -94,7 +95,9 @@ public class RequestAnnotationMetadataUtils {
 
     public interface MetadataParser {
         void parseClass(Class<?> clazz);
+
         void parseMethod(Class<?> clazz, Method method);
+
         void parseParameter(Class<?> clazz, Method method, int index, Parameter parameter);
     }
 
@@ -118,33 +121,33 @@ public class RequestAnnotationMetadataUtils {
 
     public static abstract class AbstractMetadataProcessor<T> implements MetadataProcessor {
 
-        protected final Map<MetadataKey, List<IndexItem<T>>> paramNameMap = new HashMap<>();
+        protected final Map<MetadataKey, List<IndexItem<T>>> indexItemMap = new HashMap<>();
 
         @Override
         public void parseParameter(Class<?> clazz, Method method, int index, Parameter parameter) {
-            T t = parseParameterItem(parameter);
+            T t = parseIndexItem(parameter);
             if (t == null) {
                 return;
             }
 
             MetadataKey mapKey = new MetadataKey(clazz, method);
-            paramNameMap.putIfAbsent(mapKey, new ArrayList<>());
+            indexItemMap.putIfAbsent(mapKey, new ArrayList<>());
             IndexItem<T> indexItem = new IndexItem<>(index, t);
-            paramNameMap.get(mapKey).add(indexItem);
+            indexItemMap.get(mapKey).add(indexItem);
         }
 
         @Override
         public void applyRequest(Request request, Method method, Object[] args) {
-            List<IndexItem<T>> indexItems = paramNameMap.get(new MetadataKey(method.getDeclaringClass(), method));
+            List<IndexItem<T>> indexItems = indexItemMap.get(new MetadataKey(method.getDeclaringClass(), method));
             if (indexItems == null) {
                 return;
             }
-            applyRequestInner(request, indexItems, args);
+            applyIndexItem(request, indexItems, args);
         }
 
-        protected abstract T parseParameterItem(Parameter parameter);
+        protected abstract T parseIndexItem(Parameter parameter);
 
-        protected abstract void applyRequestInner(Request request, List<IndexItem<T>> indexItems, Object[] args);
+        protected abstract void applyIndexItem(Request request, List<IndexItem<T>> indexItems, Object[] args);
 
     }
 
@@ -274,7 +277,7 @@ public class RequestAnnotationMetadataUtils {
             return map;
         }
 
-        public static class RequestMappingMetadata {
+        private static class RequestMappingMetadata {
             private String path;
             private HttpMethod httpMethod;
             private Map<String, List<String>> headers;
@@ -317,13 +320,143 @@ public class RequestAnnotationMetadataUtils {
             public void setParams(Map<String, List<String>> params) {
                 this.params = params;
             }
+
+            @Override
+            public String toString() {
+                return "RequestMappingMetadata{" +
+                        "path='" + path + '\'' +
+                        ", httpMethod=" + httpMethod +
+                        ", headers=" + headers +
+                        ", params=" + params +
+                        '}';
+            }
+        }
+    }
+
+    private static class MatrixVariableMetadataProcessor extends AbstractMetadataProcessor<MatrixVariableMetadataProcessor.MatrixVariableMetadata> {
+
+        @Override
+        protected MatrixVariableMetadata parseIndexItem(Parameter parameter) {
+            MatrixVariable matrixVariableAnnotation = findMergedAnnotation(parameter, MatrixVariable.class);
+            if (matrixVariableAnnotation == null) {
+                return null;
+            }
+
+            if (!StringUtils.hasText(matrixVariableAnnotation.value()) && (parameter.getType() != Map.class)) {
+                throw new IllegalArgumentException("@MatrixVariable value() must has text");
+            }
+
+            // if (!StringUtils.hasText(matrixVariableAnnotation.pathVar()) || ValueConstants.DEFAULT_NONE.equals(matrixVariableAnnotation.pathVar())) {
+            //     throw new IllegalArgumentException("@MatrixVariable pathVar() must has text");
+            // }
+            // ignore, not throw exception
+            if (!StringUtils.hasText(matrixVariableAnnotation.pathVar()) || ValueConstants.DEFAULT_NONE.equals(matrixVariableAnnotation.pathVar())) {
+                return null;
+            }
+
+            return new MatrixVariableMetadata("{" + matrixVariableAnnotation.pathVar() + "}", matrixVariableAnnotation.value());
+        }
+
+        @Override
+        protected void applyIndexItem(Request request, List<IndexItem<MatrixVariableMetadata>> indexItems, Object[] args) {
+            if (!StringUtils.hasText(request.getUrl())) {
+                return;
+            }
+
+            // assemble matrix url
+            Map<String, StringBuilder> matrixMap = new HashMap<>();
+            for (IndexItem<MatrixVariableMetadata> indexItem : indexItems) {
+                int i = indexItem.getIndex();
+                MatrixVariableMetadata matrixVariableMetadata = indexItem.getItem();
+
+                if (args[i] == null) {
+                    continue;
+                }
+
+                String pathVarPlaceHolder = matrixVariableMetadata.getPathVarPlaceHolder();
+                matrixMap.putIfAbsent(pathVarPlaceHolder, new StringBuilder());
+                matrixMap.get(pathVarPlaceHolder).append(convertMatrix(matrixVariableMetadata.getName(), args[i]));
+            }
+
+            // insert matrix value
+            StringBuilder sb = new StringBuilder(request.getUrl());
+            matrixMap.forEach((k, v) -> {
+                int idx = sb.indexOf(k);
+                if (idx != -1) {
+                    sb.insert(idx + k.length(), v);
+                }
+            });
+
+            request.setUrl(sb.toString());
+        }
+
+        private String convertMatrix(String name, Object o) {
+            if (o instanceof Map<?, ?>) {
+                Map<?, ?> map = (Map<?, ?>) o;
+                return map.keySet().stream().filter(key -> map.get(key) != null)
+                        .filter(key -> !StringUtils.hasText(name) || key.equals(name))
+                        .map(key -> ";" + key + "=" + convert(map.get(key))).collect(Collectors.joining());
+            } else {
+                return ";" + name + "=" + convert(o);
+            }
+        }
+
+        private static class MatrixVariableMetadata {
+            private final String pathVarPlaceHolder;
+            private final String name;
+
+            public MatrixVariableMetadata(String pathVarPlaceHolder, String name) {
+                this.pathVarPlaceHolder = pathVarPlaceHolder;
+                this.name = name;
+            }
+
+            public String getPathVarPlaceHolder() {
+                return pathVarPlaceHolder;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public String toString() {
+                return "MatrixVariableMetadata: " + pathVarPlaceHolder + "#" + name;
+            }
+        }
+    }
+
+    private static class PathVariableMetadataProcessor extends AbstractMetadataProcessor<String> {
+
+        @Override
+        protected String parseIndexItem(Parameter parameter) {
+            PathVariable pathVariableAnnotation = findMergedAnnotation(parameter, PathVariable.class);
+            if (pathVariableAnnotation == null) {
+                return null;
+            }
+
+            Assert.hasText(pathVariableAnnotation.value(), "@PathVariable value() must has text");
+            return pathVariableAnnotation.value();
+        }
+
+        @Override
+        protected void applyIndexItem(Request request, List<IndexItem<String>> indexItems, Object[] args) {
+            for (IndexItem<String> indexItem : indexItems) {
+                int i = indexItem.getIndex();
+                String key = indexItem.getItem();
+
+                if (args[i] == null) {
+                    continue;
+                }
+
+                request.setUrl(request.getUrl().replaceFirst("\\{" + key + "}", convert(args[i])));
+            }
         }
     }
 
     private static class RequestParamMetadataProcessor extends AbstractMetadataProcessor<String> {
 
         @Override
-        protected String parseParameterItem(Parameter parameter) {
+        protected String parseIndexItem(Parameter parameter) {
             RequestParam requestParamAnnotation = findMergedAnnotation(parameter, RequestParam.class);
             if (requestParamAnnotation == null) {
                 return null;
@@ -348,7 +481,7 @@ public class RequestAnnotationMetadataUtils {
         }
 
         @Override
-        protected void applyRequestInner(Request request, List<IndexItem<String>> indexItems, Object[] args) {
+        protected void applyIndexItem(Request request, List<IndexItem<String>> indexItems, Object[] args) {
             for (IndexItem<String> indexItem : indexItems) {
                 int i = indexItem.getIndex();
                 String key = indexItem.getItem();
@@ -377,38 +510,10 @@ public class RequestAnnotationMetadataUtils {
         }
     }
 
-    private static class PathVariableMetadataProcessor extends AbstractMetadataProcessor<String> {
-
-        @Override
-        protected String parseParameterItem(Parameter parameter) {
-            PathVariable pathVariableAnnotation = findMergedAnnotation(parameter, PathVariable.class);
-            if (pathVariableAnnotation == null) {
-                return null;
-            }
-
-            Assert.hasText(pathVariableAnnotation.value(), "@PathVariable value() must has text");
-            return pathVariableAnnotation.value();
-        }
-
-        @Override
-        protected void applyRequestInner(Request request, List<IndexItem<String>> indexItems, Object[] args) {
-            for (IndexItem<String> indexItem : indexItems) {
-                int i = indexItem.getIndex();
-                String key = indexItem.getItem();
-
-                if (args[i] == null) {
-                    continue;
-                }
-
-                request.setUrl(request.getUrl().replaceFirst("\\{" + key + "}", convert(args[i])));
-            }
-        }
-    }
-
     private static class RequestHeaderMetadataProcessor extends AbstractMetadataProcessor<String> {
 
         @Override
-        protected String parseParameterItem(Parameter parameter) {
+        protected String parseIndexItem(Parameter parameter) {
             RequestHeader requestHeaderAnnotation = findMergedAnnotation(parameter, RequestHeader.class);
             if (requestHeaderAnnotation == null) {
                 return null;
@@ -419,7 +524,7 @@ public class RequestAnnotationMetadataUtils {
         }
 
         @Override
-        protected void applyRequestInner(Request request, List<IndexItem<String>> indexItems, Object[] args) {
+        protected void applyIndexItem(Request request, List<IndexItem<String>> indexItems, Object[] args) {
             for (IndexItem<String> indexItem : indexItems) {
                 int i = indexItem.getIndex();
                 String key = indexItem.getItem();
@@ -436,7 +541,7 @@ public class RequestAnnotationMetadataUtils {
     private static class CookieValueMetadataProcessor extends AbstractMetadataProcessor<String> {
 
         @Override
-        protected String parseParameterItem(Parameter parameter) {
+        protected String parseIndexItem(Parameter parameter) {
             CookieValue cookieValueAnnotation = findMergedAnnotation(parameter, CookieValue.class);
             if (cookieValueAnnotation == null) {
                 return null;
@@ -447,7 +552,7 @@ public class RequestAnnotationMetadataUtils {
         }
 
         @Override
-        protected void applyRequestInner(Request request, List<IndexItem<String>> indexItems, Object[] args) {
+        protected void applyIndexItem(Request request, List<IndexItem<String>> indexItems, Object[] args) {
             for (IndexItem<String> indexItem : indexItems) {
                 int i = indexItem.getIndex();
                 String key = indexItem.getItem();
@@ -465,7 +570,7 @@ public class RequestAnnotationMetadataUtils {
     private static class RequestPartMetadataProcessor extends AbstractMetadataProcessor<String> {
 
         @Override
-        protected String parseParameterItem(Parameter parameter) {
+        protected String parseIndexItem(Parameter parameter) {
             RequestPart requestPartAnnotation = findMergedAnnotation(parameter, RequestPart.class);
             if (requestPartAnnotation == null) {
                 return null;
@@ -476,7 +581,7 @@ public class RequestAnnotationMetadataUtils {
         }
 
         @Override
-        protected void applyRequestInner(Request request, List<IndexItem<String>> indexItems, Object[] args) {
+        protected void applyIndexItem(Request request, List<IndexItem<String>> indexItems, Object[] args) {
 
             Map<String, List<MultipartFile>> tempMultipartFilesMap = new HashMap<>();
 
@@ -520,7 +625,7 @@ public class RequestAnnotationMetadataUtils {
     private static class RequestBodyMetadataProcessor extends AbstractMetadataProcessor<Boolean> {
 
         @Override
-        protected Boolean parseParameterItem(Parameter parameter) {
+        protected Boolean parseIndexItem(Parameter parameter) {
 
             // 文件上传的body优先，此处不设置解析值
             if (parameter.getAnnotation(RequestPart.class) != null) {
@@ -536,7 +641,7 @@ public class RequestAnnotationMetadataUtils {
         }
 
         @Override
-        protected void applyRequestInner(Request request, List<IndexItem<Boolean>> indexItems, Object[] args) {
+        protected void applyIndexItem(Request request, List<IndexItem<Boolean>> indexItems, Object[] args) {
             if (indexItems.size() <= 0) {
                 return;
             }
