@@ -95,9 +95,7 @@ public class RequestAnnotationMetadataUtils {
 
     public interface MetadataParser {
         void parseClass(Class<?> clazz);
-
         void parseMethod(Class<?> clazz, Method method);
-
         void parseParameter(Class<?> clazz, Method method, int index, Parameter parameter);
     }
 
@@ -624,6 +622,8 @@ public class RequestAnnotationMetadataUtils {
 
     private static class RequestBodyMetadataProcessor extends AbstractMetadataProcessor<Boolean> {
 
+        public static final Class<?>[] ignoredAnnotations = {MatrixVariable.class, PathVariable.class, RequestParam.class, RequestHeader.class, CookieValue.class};
+
         @Override
         protected Boolean parseIndexItem(Parameter parameter) {
 
@@ -662,7 +662,7 @@ public class RequestAnnotationMetadataUtils {
 
         private boolean hasOtherParameterAnnotation(Annotation[] annotations) {
             for (Annotation annotation : annotations) {
-                for (Class<?> httpClass : Arrays.asList(RequestParam.class, PathVariable.class, RequestHeader.class, CookieValue.class)) {
+                for (Class<?> httpClass : ignoredAnnotations) {
                     if (httpClass == annotation.annotationType()) {
                         return true;
                     }
