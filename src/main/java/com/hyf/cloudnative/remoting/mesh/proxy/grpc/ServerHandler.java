@@ -17,7 +17,8 @@ public class ServerHandler {
         Object rtn;
         if (message.getBody() == null) {
             rtn = method.invoke(instance);
-        } else {
+        }
+        else {
             rtn = method.invoke(instance, message.getBody());
         }
 

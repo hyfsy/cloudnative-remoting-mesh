@@ -9,11 +9,11 @@ import java.util.Objects;
 
 public class Request {
 
-    private String url;
-    private HttpMethod httpMethod;
+    private String                    url;
+    private HttpMethod                httpMethod;
     private Map<String, List<String>> headers;
     private Map<String, List<String>> params;
-    private Object body;
+    private Object                    body;
 
     public String getUrl() {
         return url;
@@ -63,8 +63,12 @@ public class Request {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Request request = (Request) o;
         return Objects.equals(url, request.url) && httpMethod == request.httpMethod && Objects.equals(headers, request.headers) && Objects.equals(params, request.params) && Objects.equals(body, request.body);
     }

@@ -2,9 +2,29 @@ package com.hyf.cloudnative.remoting.mesh.proxy;
 
 import java.util.Objects;
 
+/**
+ * k8s client invocation context.
+ *
+ * @param <T> client type, depends on implements
+ * @see AbstractRemotingInvocationHandler
+ * @see com.hyf.cloudnative.remoting.mesh.proxy.http.HttpInvocationHandler
+ * @see com.hyf.cloudnative.remoting.mesh.proxy.grpc.GrpcInvocationHandler
+ */
 public class InvocationContext<T> {
+
+    /**
+     * method invocation caller type, usually is a interface
+     */
     private Class<?> type;
+
+    /**
+     * communicate client, depends on implements
+     */
     private T client;
+
+    /**
+     * k8s service address
+     */
     private String addr;
 
     public InvocationContext(Class<?> type, T client, String addr) {
@@ -39,8 +59,12 @@ public class InvocationContext<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         InvocationContext<?> that = (InvocationContext<?>) o;
         return Objects.equals(type, that.type) && Objects.equals(client, that.client) && Objects.equals(addr, that.addr);
     }

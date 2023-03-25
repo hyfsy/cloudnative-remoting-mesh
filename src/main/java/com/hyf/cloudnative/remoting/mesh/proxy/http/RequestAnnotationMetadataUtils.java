@@ -26,7 +26,7 @@ import static org.springframework.core.annotation.AnnotatedElementUtils.findMerg
 
 public class RequestAnnotationMetadataUtils {
 
-    private static final List<MetadataParser> metadataParsers = new ArrayList<>();
+    private static final List<MetadataParser>  metadataParsers  = new ArrayList<>();
     private static final List<MetadataApplier> metadataAppliers = new ArrayList<>();
 
     static {
@@ -84,18 +84,22 @@ public class RequestAnnotationMetadataUtils {
             for (Object item : ((Iterable<?>) o)) {
                 iteratorConsumer.accept(item);
             }
-        } else if (o instanceof Object[]) {
+        }
+        else if (o instanceof Object[]) {
             for (Object item : ((Object[]) o)) {
                 iteratorConsumer.accept(item);
             }
-        } else {
+        }
+        else {
             iteratorConsumer.accept(o);
         }
     }
 
     public interface MetadataParser {
         void parseClass(Class<?> clazz);
+
         void parseMethod(Class<?> clazz, Method method);
+
         void parseParameter(Class<?> clazz, Method method, int index, Parameter parameter);
     }
 
@@ -104,15 +108,19 @@ public class RequestAnnotationMetadataUtils {
     }
 
     public interface MetadataProcessor extends MetadataParser, MetadataApplier {
+        @Override
         default void parseClass(Class<?> clazz) {
         }
 
+        @Override
         default void parseMethod(Class<?> clazz, Method method) {
         }
 
+        @Override
         default void parseParameter(Class<?> clazz, Method method, int index, Parameter parameter) {
         }
 
+        @Override
         default void applyRequest(Request request, Method method, Object[] args) {
         }
     }
@@ -180,7 +188,8 @@ public class RequestAnnotationMetadataUtils {
 
             if (StringUtils.hasText(request.getUrl())) {
                 request.setUrl(WebUtils.concat(Arrays.asList(request.getUrl(), metadata.getPath())));
-            } else {
+            }
+            else {
                 request.setUrl(metadata.getPath());
             }
             if (request.getHttpMethod() == null) {
@@ -212,13 +221,15 @@ public class RequestAnnotationMetadataUtils {
 
             if (methodAnnotation != null && methodAnnotation.method().length > 0) {
                 method = methodAnnotation.method();
-            } else if (classAnnotation != null) {
+            }
+            else if (classAnnotation != null) {
                 method = classAnnotation.method();
             }
 
             if (method.length == 0) {
                 httpMethod = HttpMethod.GET; // default get
-            } else {
+            }
+            else {
                 httpMethod = HttpMethod.valueOf(method[0].name());
             }
             metadata.setHttpMethod(httpMethod);
@@ -229,7 +240,8 @@ public class RequestAnnotationMetadataUtils {
 
             if (methodAnnotation != null && methodAnnotation.params().length > 0) {
                 params.putAll(parseList(methodAnnotation.params()));
-            } else if (classAnnotation != null) {
+            }
+            else if (classAnnotation != null) {
                 params.putAll(parseList(classAnnotation.params()));
             }
 
@@ -243,19 +255,22 @@ public class RequestAnnotationMetadataUtils {
 
             if (methodAnnotation != null && methodAnnotation.produces().length > 0) {
                 headers.put(HttpHeaders.ACCEPT, Arrays.asList(methodAnnotation.produces()));
-            } else if (classAnnotation != null && classAnnotation.produces().length > 0) {
+            }
+            else if (classAnnotation != null && classAnnotation.produces().length > 0) {
                 headers.put(HttpHeaders.ACCEPT, Arrays.asList(classAnnotation.produces()));
             }
 
             if (methodAnnotation != null && methodAnnotation.consumes().length > 0) {
                 headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(methodAnnotation.consumes()));
-            } else if (classAnnotation != null && classAnnotation.consumes().length > 0) {
+            }
+            else if (classAnnotation != null && classAnnotation.consumes().length > 0) {
                 headers.put(HttpHeaders.CONTENT_TYPE, Arrays.asList(classAnnotation.consumes()));
             }
 
             if (methodAnnotation != null && methodAnnotation.headers().length > 0) {
                 headers.putAll(parseList(methodAnnotation.headers()));
-            } else if (classAnnotation != null) {
+            }
+            else if (classAnnotation != null) {
                 headers.putAll(parseList(classAnnotation.headers()));
             }
 
@@ -276,8 +291,8 @@ public class RequestAnnotationMetadataUtils {
         }
 
         private static class RequestMappingMetadata {
-            private String path;
-            private HttpMethod httpMethod;
+            private String                    path;
+            private HttpMethod                httpMethod;
             private Map<String, List<String>> headers;
             private Map<String, List<String>> params;
 
@@ -394,7 +409,8 @@ public class RequestAnnotationMetadataUtils {
                 return map.keySet().stream().filter(key -> map.get(key) != null)
                         .filter(key -> !StringUtils.hasText(name) || key.equals(name))
                         .map(key -> ";" + key + "=" + convert(map.get(key))).collect(Collectors.joining());
-            } else {
+            }
+            else {
                 return ";" + name + "=" + convert(o);
             }
         }
@@ -499,7 +515,8 @@ public class RequestAnnotationMetadataUtils {
                         iterateObject(v, o -> mapParams.add(convert(o)));
                         request.getParams().put(mapKey, mapParams);
                     }
-                } else {
+                }
+                else {
                     List<String> params = new ArrayList<>();
                     iterateObject(args[i], o -> params.add(convert(o)));
                     request.getParams().put(key, params);
@@ -613,7 +630,8 @@ public class RequestAnnotationMetadataUtils {
             iterateObject(arg, o -> {
                 if (o instanceof Part) {
                     multipartFilesMap.get(partName).add(new MultipartFileAdapter((Part) o));
-                } else if (o instanceof MultipartFile) {
+                }
+                else if (o instanceof MultipartFile) {
                     multipartFilesMap.get(partName).add((MultipartFile) o);
                 }
             });
@@ -674,7 +692,7 @@ public class RequestAnnotationMetadataUtils {
 
     public static class MetadataKey {
         private final Class<?> clazz;
-        private final Method method;
+        private final Method   method;
 
         public MetadataKey(Class<?> clazz, Method method) {
             this.clazz = clazz;
@@ -683,8 +701,12 @@ public class RequestAnnotationMetadataUtils {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             MetadataKey that = (MetadataKey) o;
             return Objects.equals(clazz, that.clazz) && Objects.equals(method, that.method);
         }
@@ -702,7 +724,7 @@ public class RequestAnnotationMetadataUtils {
 
     public static class IndexItem<T> {
         private final int index;
-        private final T item;
+        private final T   item;
 
         public IndexItem(int index, T item) {
             this.index = index;
@@ -719,8 +741,12 @@ public class RequestAnnotationMetadataUtils {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
             IndexItem<T> that = (IndexItem<T>) o;
             return index == that.index && Objects.equals(item, that.item);
         }

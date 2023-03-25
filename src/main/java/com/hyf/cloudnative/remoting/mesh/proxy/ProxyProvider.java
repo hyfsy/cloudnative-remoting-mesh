@@ -4,5 +4,6 @@ import org.springframework.beans.factory.BeanFactory;
 
 public interface ProxyProvider {
     String requestWay();
+
     Object get(BeanFactory beanFactory, ClientConfig clientConfig);
 }

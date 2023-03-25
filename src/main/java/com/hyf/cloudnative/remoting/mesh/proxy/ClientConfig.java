@@ -6,16 +6,54 @@ import com.hyf.cloudnative.remoting.mesh.utils.ServiceHostUtils;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.util.Assert;
 
+/**
+ * k8s client build config.
+ */
 public class ClientConfig {
 
+    /**
+     * client interface type
+     */
     private Class<?> type;
+
+    /**
+     * requested k8s service name
+     */
     private String serviceName;
+
+    /**
+     * requested k8s service port
+     */
     private int port = -1;
+
+    /**
+     * whether the client supports tls
+     */
     private boolean tlsEnable;
+
+    /**
+     * requested k8s namespace
+     */
     private String namespace;
+
+    /**
+     * requested k8s cluster domain
+     */
     private String clusterDomain;
+
+    /**
+     * client request way
+     */
     private String requestWay;
+
+    /**
+     * client request fallback instance type
+     */
     private Class<?> fallback;
+
+    /**
+     * client request fallback factory instance type
+     */
     private Class<?> fallbackFactory;
 
     public ClientConfig() {

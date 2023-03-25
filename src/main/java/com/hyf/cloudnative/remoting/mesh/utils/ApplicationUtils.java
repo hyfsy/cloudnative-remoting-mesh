@@ -8,17 +8,20 @@ import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * spring application util.
+ */
 public class ApplicationUtils implements ApplicationContextAware {
 
     private static volatile ApplicationContext applicationContext;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
     public static ApplicationContext getApplicationContext() {
         return applicationContext;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        ApplicationUtils.applicationContext = applicationContext;
     }
 
     public static <T> List<T> getOrderedList(Class<T> clazz) {

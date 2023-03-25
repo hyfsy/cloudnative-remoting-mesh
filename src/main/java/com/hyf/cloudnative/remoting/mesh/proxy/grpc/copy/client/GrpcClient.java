@@ -1,15 +1,13 @@
 package com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
+import com.hyf.cloudnative.remoting.mesh.exception.RemotingException;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.Message;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.ConnectionManager;
-import com.hyf.cloudnative.remoting.mesh.exception.RemotingException;
-import com.hyf.cloudnative.remoting.mesh.proxy.grpc.utils.RemotingUtils;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.ConnectionWrapper;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.hyf.cloudnative.remoting.mesh.proxy.grpc.utils.RemotingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.*;
 
 /**
  * @author baB_hyf
@@ -19,7 +17,7 @@ public class GrpcClient {
 
     private static final Logger log = LoggerFactory.getLogger(GrpcClient.class);
 
-    private final GrpcClientConfig grpcClientConfig;
+    private final GrpcClientConfig  grpcClientConfig;
     private final ConnectionManager connectionManager;
 
     public GrpcClient() {
@@ -63,7 +61,8 @@ public class GrpcClient {
 
         if (ex != null) {
             throw ex;
-        } else {
+        }
+        else {
             throw new RemotingException("Cannot happen");
         }
     }

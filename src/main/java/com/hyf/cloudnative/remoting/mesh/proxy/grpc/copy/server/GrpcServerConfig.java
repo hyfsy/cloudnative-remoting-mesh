@@ -3,6 +3,8 @@ package com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.server;
 import com.hyf.cloudnative.remoting.mesh.constants.ClientConstants;
 
 /**
+ * grpc server config.
+ *
  * @author baB_hyf
  * @date 2022/10/01
  */

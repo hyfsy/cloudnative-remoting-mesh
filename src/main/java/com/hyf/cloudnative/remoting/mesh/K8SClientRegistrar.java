@@ -3,7 +3,9 @@ package com.hyf.cloudnative.remoting.mesh;
 import com.hyf.cloudnative.remoting.mesh.config.GrpcClientConfiguration;
 import com.hyf.cloudnative.remoting.mesh.proxy.K8SClientFactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
-import org.springframework.beans.factory.config.*;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
@@ -21,12 +23,21 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * enabled with {@link EnableK8SClients} annotation, scan all beans which use {@link K8SClient} annotated.
+ *
+ * @see EnableK8SClients
+ * @see K8SClient
+ */
 public class K8SClientRegistrar implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
 
     private ResourceLoader resourceLoader;
-    private Environment environment;
+    private Environment    environment;
 
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {

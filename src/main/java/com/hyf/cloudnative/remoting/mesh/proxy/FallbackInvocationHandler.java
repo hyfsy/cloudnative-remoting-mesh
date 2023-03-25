@@ -6,9 +6,21 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * wrap original {@link InvocationHandler}, supplies fallback implementation.
+ *
+ * @see AbstractFallbackProxyProvider
+ */
 public class FallbackInvocationHandler implements InvocationHandler {
 
+    /**
+     * original proxy implementation
+     */
     private final InvocationHandler delegate;
+
+    /**
+     * fallback instance factory
+     */
     // @Nullable
     private final FallbackFactory<?> fallbackFactory;
 

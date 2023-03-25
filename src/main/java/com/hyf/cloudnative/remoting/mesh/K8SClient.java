@@ -6,7 +6,11 @@ import org.springframework.core.annotation.AliasFor;
 import java.lang.annotation.*;
 
 /**
- * marker as a k8s service client
+ * marker as a k8s service client.
+ *
+ * @see EnableK8SClients
+ * @see org.springframework.stereotype.Controller
+ * @see GrpcController
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
@@ -56,6 +60,7 @@ public @interface K8SClient {
     /**
      * Fallback class for the specified k8s client interface. The fallback class must
      * implement the interface annotated by this annotation and be a valid spring bean.
+     *
      * @return fallback class for the specified k8s client interface
      */
     Class<?> fallback() default void.class;
@@ -65,8 +70,8 @@ public @interface K8SClient {
      * factory must produce instances of fallback classes that implement the interface
      * annotated by {@link K8SClient}. The fallback factory must be a valid spring bean.
      *
-     * @see FallbackFactory for details.
      * @return fallback factory for the specified k8s client interface
+     * @see FallbackFactory for details.
      */
     Class<?> fallbackFactory() default void.class;
 

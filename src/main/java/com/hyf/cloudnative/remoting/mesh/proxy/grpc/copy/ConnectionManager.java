@@ -1,10 +1,10 @@
 package com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy;
 
-import com.hyf.cloudnative.remoting.mesh.proxy.grpc.utils.RemotingUtils;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.client.GrpcClientConfig;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.generate.Message;
 import com.hyf.cloudnative.remoting.mesh.proxy.grpc.generate.RemotingApiGrpc;
-import com.google.common.util.concurrent.ListenableFuture;
+import com.hyf.cloudnative.remoting.mesh.proxy.grpc.utils.RemotingUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.slf4j.Logger;
@@ -13,7 +13,10 @@ import org.slf4j.LoggerFactory;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author baB_hyf
@@ -57,14 +60,14 @@ public class ConnectionManager {
 
     private ManagedChannel createManagedChannel(String addr) {
         InetSocketAddress address = RemotingUtils.parseSocketAddress(addr);
-//        System.out.println(addr);
-//        System.out.println(address);
-//        System.out.println(address.getHostName());
-//        System.out.println(address.getPort());
-//        log.info(addr);
-//        log.info(address.toString());
-//        log.info(address.getHostName());
-//        log.info(address.getPort() + "");
+        // System.out.println(addr);
+        // System.out.println(address);
+        // System.out.println(address.getHostName());
+        // System.out.println(address.getPort());
+        // log.info(addr);
+        // log.info(address.toString());
+        // log.info(address.getHostName());
+        // log.info(address.getPort() + "");
         return ManagedChannelBuilder
                 .forAddress(address.getHostName(), address.getPort())
                 .maxInboundMessageSize(grpcClientConfig.getMaxInboundMessageSize())

@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Objects;
 
 public class Message {
-    private int id;
-    private boolean req = true;
-    private boolean event = false;
-    private Class<?> clazz;
-    private Method method;
-    private Object body;
+    private int                 id;
+    private boolean             req   = true;
+    private boolean             event = false;
+    private Class<?>            clazz;
+    private Method              method;
+    private Object              body;
     private Map<String, String> metadata;
 
     public int getId() {
@@ -71,8 +71,12 @@ public class Message {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Message message = (Message) o;
         return id == message.id && req == message.req && event == message.event && Objects.equals(clazz, message.clazz) && Objects.equals(method, message.method) && Objects.equals(body, message.body) && Objects.equals(metadata, message.metadata);
     }

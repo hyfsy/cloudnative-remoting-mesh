@@ -12,7 +12,7 @@ import java.io.InputStream;
 
 public class SimpleMultipartFile implements MultipartFile {
 
-    private final File file;
+    private final File   file;
     private final String contentType;
 
     public SimpleMultipartFile(File file) {

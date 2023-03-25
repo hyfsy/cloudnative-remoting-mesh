@@ -4,6 +4,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.function.Consumer;
 
+/**
+ * convenient utility to operate client config.
+ */
 public class ClientConfigUtils {
 
     public static <T> void setIfNotNull(T o, Consumer<T> setAction) {

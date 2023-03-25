@@ -7,7 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * create K8SClient in hard code
+ * <p>
  * TODO 赋值逻辑优化
+ *
+ * @see K8SClient
  */
 public class K8SClientBuilder {
 
@@ -29,8 +33,8 @@ public class K8SClientBuilder {
     public static final class Builder<T> {
 
         private final K8SClientFactoryBean k8sClientFactoryBean;
-        private final ApplicationContext applicationContext;
-        private final Class<T> type;
+        private final ApplicationContext   applicationContext;
+        private final Class<T>             type;
 
         private final Map<String, Object> lazyAttributes = new HashMap<>();
 
@@ -43,48 +47,48 @@ public class K8SClientBuilder {
             this.applicationContext = applicationContext;
             this.type = type;
 
-//            this.k8sClientFactoryBean.setServiceName(name);
+            // this.k8sClientFactoryBean.setServiceName(name);
             this.lazyAttributes.put("name", name);
         }
 
         public K8SClientBuilder.Builder<T> port(int port) {
-//            this.k8sClientFactoryBean.setPort(port);
+            // this.k8sClientFactoryBean.setPort(port);
             this.lazyAttributes.put("port", port);
             return this;
         }
 
         public K8SClientBuilder.Builder<T> tlsEnable(boolean tlsEnable) {
-//            this.k8sClientFactoryBean.setTlsEnable(tlsEnable);
+            // this.k8sClientFactoryBean.setTlsEnable(tlsEnable);
             this.lazyAttributes.put("tlsEnable", tlsEnable);
             return this;
         }
 
         public K8SClientBuilder.Builder<T> namespace(String namespace) {
-//            this.k8sClientFactoryBean.setNamespace(namespace);
+            // this.k8sClientFactoryBean.setNamespace(namespace);
             this.lazyAttributes.put("namespace", namespace);
             return this;
         }
 
         public K8SClientBuilder.Builder<T> clusterDomain(String clusterDomain) {
-//            this.k8sClientFactoryBean.setClusterDomain(clusterDomain);
+            // this.k8sClientFactoryBean.setClusterDomain(clusterDomain);
             this.lazyAttributes.put("clusterDomain", clusterDomain);
             return this;
         }
 
         public K8SClientBuilder.Builder<T> requestWay(String requestWay) {
-//            this.k8sClientFactoryBean.setRequestWay(requestWay);
+            // this.k8sClientFactoryBean.setRequestWay(requestWay);
             this.lazyAttributes.put("requestWay", requestWay);
             return this;
         }
 
         public K8SClientBuilder.Builder<T> fallback(Class<? extends T> fallback) {
-//            this.k8sClientFactoryBean.setFallback(fallback);
+            // this.k8sClientFactoryBean.setFallback(fallback);
             this.lazyAttributes.put("fallback", fallback);
             return this;
         }
 
         public K8SClientBuilder.Builder<T> fallbackFactory(Class<? extends T> fallbackFactory) {
-//            this.k8sClientFactoryBean.setFallbackFactory(fallbackFactory);
+            // this.k8sClientFactoryBean.setFallbackFactory(fallbackFactory);
             this.lazyAttributes.put("fallbackFactory", fallbackFactory);
             return this;
         }

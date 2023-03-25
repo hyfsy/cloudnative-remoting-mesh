@@ -6,16 +6,31 @@ import com.hyf.cloudnative.remoting.mesh.proxy.grpc.copy.server.GrpcServerConfig
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
+/**
+ * remoting call related properties.
+ */
 @ConfigurationProperties(ClientConstants.PROPERTIES_PREFIX)
 public class RemotingProperties {
 
+    /**
+     * grpc related config
+     */
+    public final Grpc grpc = new Grpc();
+
+    /**
+     * k8s namespace
+     */
     public String namespace;
 
+    /**
+     * k8s cluster domain
+     */
     public String clusterDomain;
 
+    /**
+     * k8s client request way
+     */
     public String requestWay;
-
-    public final Grpc grpc = new Grpc();
 
     public String getNamespace() {
         return namespace;
@@ -41,11 +56,21 @@ public class RemotingProperties {
         this.requestWay = requestWay;
     }
 
+    public Grpc getGrpc() {
+        return grpc;
+    }
+
     public static class Grpc {
 
+        /**
+         * grpc client config
+         */
         @NestedConfigurationProperty
         public final GrpcClientConfig client = new GrpcClientConfig();
 
+        /**
+         * grpc server config
+         */
         @NestedConfigurationProperty
         public final GrpcServerConfig server = new GrpcServerConfig();
 
@@ -56,9 +81,5 @@ public class RemotingProperties {
         public GrpcServerConfig getServer() {
             return server;
         }
-    }
-
-    public Grpc getGrpc() {
-        return grpc;
     }
 }
