@@ -15,6 +15,10 @@ import java.lang.annotation.*;
 @Documented
 @Component
 public @interface GrpcController {
+
+    /**
+     * grpc controller spring bean name
+     */
     @AliasFor(annotation = Component.class)
     String value() default "";
 }

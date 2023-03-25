@@ -6,8 +6,18 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
+/**
+ * wrap original {@link ProxyProvider}, supply fallback implementation.
+ * <p>
+ * users are recommended to implement this class.
+ *
+ * @see FallbackInvocationHandler
+ */
 public abstract class AbstractFallbackProxyProvider implements ProxyProvider {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object get(BeanFactory beanFactory, ClientConfig clientConfig) {
 
@@ -32,8 +42,23 @@ public abstract class AbstractFallbackProxyProvider implements ProxyProvider {
         return createProxy(beanFactory, clientConfig, invocationHandler);
     }
 
+    /**
+     * create invocation handler instance for invoke network calls.
+     *
+     * @param beanFactory  Spring beanFactory
+     * @param clientConfig client config
+     * @return invocation handler instance
+     */
     protected abstract InvocationHandler createInvocationHandler(BeanFactory beanFactory, ClientConfig clientConfig);
 
+    /**
+     * create the client proxy instance, default uses jdk proxy simply.
+     *
+     * @param beanFactory       Spring beanFactory
+     * @param clientConfig      client config
+     * @param invocationHandler invocation handler instance
+     * @return client proxy instance
+     */
     protected Object createProxy(BeanFactory beanFactory, ClientConfig clientConfig, InvocationHandler invocationHandler) {
         return Proxy.newProxyInstance(clientConfig.getType().getClassLoader(), new Class[]{clientConfig.getType()}, invocationHandler);
     }
@@ -41,19 +66,19 @@ public abstract class AbstractFallbackProxyProvider implements ProxyProvider {
     @SuppressWarnings("unchecked")
     private <T> T getBeanFromContext(BeanFactory beanFactory, Class<?> beanClass, Class<T> needType) {
 
-        Object fallbackBean = null;
+        Object bean = null;
         try {
-            fallbackBean = beanFactory.getBean(beanClass);
+            bean = beanFactory.getBean(beanClass);
         } catch (NoSuchBeanDefinitionException ignored) {
         }
 
-        if (fallbackBean == null) {
-            throw new IllegalStateException(String.format("No instance of type %s found for k8s client", beanClass));
+        if (bean == null) {
+            throw new IllegalStateException(String.format("No instance of type %s found for create proxy instance", beanClass));
         }
-        if (!needType.isAssignableFrom(fallbackBean.getClass())) {
-            throw new IllegalStateException(String.format("Fallback of type %s is not assignable to %s for k8s client", fallbackBean.getClass(), needType));
+        if (!needType.isAssignableFrom(bean.getClass())) {
+            throw new IllegalStateException(String.format("Bean type %s is not assignable to %s for create proxy instance", bean.getClass(), needType));
         }
 
-        return (T) fallbackBean;
+        return (T) bean;
     }
 }

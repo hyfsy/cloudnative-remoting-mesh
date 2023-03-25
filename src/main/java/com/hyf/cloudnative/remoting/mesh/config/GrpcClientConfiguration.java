@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
 
+/**
+ * grpc client configuration
+ */
 @Configuration
 public class GrpcClientConfiguration {
 

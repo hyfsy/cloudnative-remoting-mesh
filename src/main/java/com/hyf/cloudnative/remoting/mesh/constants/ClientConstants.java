@@ -2,8 +2,14 @@ package com.hyf.cloudnative.remoting.mesh.constants;
 
 import com.hyf.cloudnative.remoting.mesh.RequestWay;
 
+/**
+ * client constants.
+ */
 public class ClientConstants {
 
+    /**
+     * property key prefix
+     */
     public static final String PROPERTIES_PREFIX = "cloudnative.remoting.mesh";
 
     // --------------------------- default value ---------------------------

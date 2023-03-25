@@ -12,6 +12,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+/**
+ * auto configuration for cloud native remoting
+ */
 @Configuration
 @EnableConfigurationProperties(RemotingProperties.class)
 @Import(GrpcServerConfiguration.class)

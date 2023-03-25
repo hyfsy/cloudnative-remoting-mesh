@@ -22,7 +22,7 @@ public class GrpcProxyProvider extends AbstractFallbackProxyProvider {
         String host = clientConfig.generateServiceHost(beanFactory);
         int port = clientConfig.getPort();
 
-        InvocationMetadataRegistry.registryClass(type);
+        InvocationMetadataRegistry.registerClassMetadata(type);
 
         boolean tlsEnable = clientConfig.isTlsEnable();
         // http://www.caotama.com/1899347.html

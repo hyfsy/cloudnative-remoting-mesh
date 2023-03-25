@@ -11,6 +11,11 @@ import org.springframework.util.ClassUtils;
 
 import java.util.Map;
 
+/**
+ * scan all the bean annotated by {@link GrpcController}
+ *
+ * @see GrpcController
+ */
 public class GrpcControllerMethodProcessor implements SmartInitializingSingleton, ApplicationContextAware, SmartLifecycle {
 
     private ApplicationContext applicationContext;
@@ -30,7 +35,7 @@ public class GrpcControllerMethodProcessor implements SmartInitializingSingleton
         for (Object object : beansWithAnnotation.values()) {
 //            InvocationMetadataRegistry.registryInstance(AopUtils.getTargetClass(object), object); // 实现类内存在多参数方法会报错，此处不注册实现类
             for (Class<?> allInterface : ClassUtils.getAllInterfaces(object)) {
-                InvocationMetadataRegistry.registryInstance(allInterface, object);
+                InvocationMetadataRegistry.registerInstanceMetadata(allInterface, object);
             }
         }
 

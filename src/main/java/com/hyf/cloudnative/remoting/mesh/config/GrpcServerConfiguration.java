@@ -12,6 +12,9 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * grpc server configuration
+ */
 @Configuration
 public class GrpcServerConfiguration {
 

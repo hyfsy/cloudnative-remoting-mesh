@@ -10,6 +10,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * {@link File} adapter.
+ */
 public class SimpleMultipartFile implements MultipartFile {
 
     private final File   file;

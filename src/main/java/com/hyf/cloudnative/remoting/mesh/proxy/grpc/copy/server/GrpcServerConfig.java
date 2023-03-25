@@ -12,12 +12,24 @@ public class GrpcServerConfig {
 
     public static final String GRPC_PROPERTIES_PREFIX = ClientConstants.PROPERTIES_PREFIX + ".grpc.server";
 
+    /**
+     * grpc server port
+     */
     private int listenPort            = Integer.parseInt(System.getProperty(
             GRPC_PROPERTIES_PREFIX + ".listenPort", String.valueOf(ClientConstants.DEFAULT_GRPC_PORT)));
+    /**
+     * max inbound message size
+     */
     private int maxInboundMessageSize = Integer.parseInt(System.getProperty(
             GRPC_PROPERTIES_PREFIX + ".maxInboundMessageSize", String.valueOf(10 * 1024 * 1024)));
+    /**
+     * thread pool size
+     */
     private int threadPoolSize        = Integer.parseInt(System.getProperty(
             GRPC_PROPERTIES_PREFIX + ".threadPoolSize", String.valueOf(Runtime.getRuntime().availableProcessors() * 4)));
+    /**
+     * thread pool queue size
+     */
     private int threadPoolQueueSize   = Integer.parseInt(System.getProperty(
             GRPC_PROPERTIES_PREFIX + ".threadPoolQueueSize", String.valueOf(1 << 14))); // 16384
 

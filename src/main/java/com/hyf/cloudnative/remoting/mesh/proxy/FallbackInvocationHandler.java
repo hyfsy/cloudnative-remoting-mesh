@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * wrap original {@link InvocationHandler}, supplies fallback implementation.
+ * wrap original {@link InvocationHandler}, supply fallback implementation.
  *
  * @see AbstractFallbackProxyProvider
  */
@@ -29,6 +29,15 @@ public class FallbackInvocationHandler implements InvocationHandler {
         this.fallbackFactory = fallbackFactory;
     }
 
+    /**
+     * handle exception when delegate invoke failed.
+     *
+     * @param proxy  client proxy instance
+     * @param method client invoked method
+     * @param args   method parameters
+     * @return client response or fallback response
+     * @throws Throwable fallback handle failed
+     */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
