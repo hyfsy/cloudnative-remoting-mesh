@@ -8,11 +8,11 @@
 | istio  | 负载均衡、熔断、限流、超时、重试、流量/API网关、链路指标收集 |
 | 未支持 | 配置动态刷新、服务调用、降级、链路指标展示、分布式事务       |
 
-- **配置动态刷新**可由`spring-cloud-kubernetes-fabric8-config` 类库负责
+- **配置动态刷新**可由 `spring-cloud-kubernetes-fabric8-config` 类库负责
 
 - **链路指标展示**可由三方链路追踪中间件处理
 
-- **分布式事务**可由seata负责
+- **分布式事务**可由三方组件负责
 
 - **服务调用**可通过RestTemplate调用、**降级**可通过捕获异常处理
 
@@ -22,7 +22,7 @@
 
 
 
-> 用例参考：https://github.com/hyfsy/mesh-demo
+> 用例参考：[mesh-demo](https://github.com/hyfsy/mesh-demo)
 
 
 
@@ -39,26 +39,28 @@
 
 ### 1.1. 引入服务调用依赖
 
+生产者端和消费者端都需要引入：
+
 ```xml
 <dependency>
     <groupId>io.github.hyfsy</groupId>
     <artifactId>cloudnative-remoting-mesh</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
 
 
-### 1.2. 编写生产者端代码
+### 1.2. 编写API接口
 
-1、编写客户端调用接口
+API接口代码：
 
 ```java
 // http请求
 @K8SClient(
     name = "${k8s.service.demo.name}", // 必填，为k8s服务名称
     port = "${k8s.service.demo.port}", // 可选，为k8s服务端口，http默认8080，grpc默认5443
-    requestWay = RequestWay.HTTP 	   // 请求方式为http方式，默认grpc
+    requestWay = RequestWay.HTTP	   // 请求方式为http方式，默认http
 )
 @RequestMapping("user")
 public interface TestHttpClient {
@@ -67,13 +69,17 @@ public interface TestHttpClient {
 }
 
 // grpc请求
-@K8SClient("${k8s.service.demo.name}")
+@K8SClient(name = "${k8s.service.demo.name}", requestWay = RequestWay.GRPC)
 public interface TestGrpcClient {
-    Result<User> getUserByIdByGrpc(Integer id); // 注意：gRPC情况下方法仅支持 1 个参数
+    Result<User> getUserByIdByGrpc(Integer id); // 注意：gRPC情况下方法目前仅支持 1 个参数
 }
 ```
 
-2、编写生产者端的控制器代码
+
+
+### 1.2. 编写生产者端代码
+
+控制器代码：
 
 ```java
 // http请求
@@ -83,7 +89,7 @@ public interface TestGrpcClient {
 // grpc请求
 
 @GrpcController // 1. 标记grpc请求的控制器
-public class DemoProviderController implements TestGrpcClient { // 2. 必须实现客户端接口
+public class DemoProviderController implements TestGrpcClient { // 2. 必须实现接口
 
     @Override
     public Result<User> getUserByIdByGrpc(Integer id) {
@@ -99,7 +105,7 @@ public class DemoProviderController implements TestGrpcClient { // 2. 必须实�
 1、启动类添加自动配置注解
 
 ```java
-@EnableK8SClients("com.hyf.cloudnative.client.api") // 扫描k8s客户端接口
+@EnableK8SClients("com.hyf.cloudnative.client.api") // 扫描客户端API接口
 @SpringBootApplication
 public class DemoConsumerApplication {
     public static void main(String[] args) {
@@ -108,14 +114,14 @@ public class DemoConsumerApplication {
 }
 ```
 
-2、配置客户端接口要求的配置
+2、配置API接口要求的配置
 
 ```properties
 ### application.properties ###
 
 # 生产者端 服务名称
 k8s.service.demo.name=service-demo-provider
-# 生产者端 HTTP服务端口
+# 生产者端 服务端口
 k8s.service.demo.port=8080
 ```
 
@@ -151,7 +157,7 @@ public class DemoConsumerController {
 
 由于服务统一通过k8s内的服务域名调用，所以本地开发测试时，需要在本地`hosts`文件添加主机域名映射
 
-文件路径：`C:\Windows\System32\drivers\etc\hosts`
+Windows文件路径：`C:\Windows\System32\drivers\etc\hosts`
 
 ```
 # service-demo-provider为k8s生产者端服务名，default为k8s命名空间名称，cluster.local为k8s集群域名

@@ -4,11 +4,43 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.hyfsy</groupId>
     <artifactId>cloudnative-remoting-mesh</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
+
+    <name>CloudNative Remoting Mesh ${project.version}</name>
+    <description>Remoting call in k8s</description>
+    <url>https://github.com/hyfsy/cloudnative-remoting-mesh</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>hyfsy</id>
+            <name>hyfsy</name>
+            <email>1577975140@qq.com</email>
+            <url>https://github.com/hyfsy/cloudnative-remoting-mesh</url>
+        </developer>
+    </developers>
+    <organization>
+        <name>Hyfsy Group</name>
+        <url>https://github.com/hyfsy</url>
+    </organization>
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/hyfsy/cloudnative-remoting-mesh/issues</url>
+    </issueManagement>
+    <scm>
+        <url>git@github.com:hyfsy/cloudnative-remoting-mesh.git</url>
+        <connection>git@github.com:hyfsy/cloudnative-remoting-mesh.git</connection>
+        <developerConnection>git@github.com:hyfsy/cloudnative-remoting-mesh.git</developerConnection>
+    </scm>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
 
         <spring.version>5.3.22</spring.version>
         <spring-boot.version>2.6.11</spring-boot.version>
@@ -20,13 +52,6 @@
     </properties>
 
     <dependencies>
-        <!-- test -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.cloud</groupId>-->
-<!--            <artifactId>spring-cloud-starter-openfeign</artifactId>-->
-<!--            <version>3.1.4</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -37,7 +62,6 @@
             <artifactId>spring-web</artifactId>
             <version>${spring.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
@@ -66,44 +90,116 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.73</version>
-        </dependency>
+
+        <!-- test -->
+        <!--<dependency>-->
+        <!--    <groupId>org.springframework.cloud</groupId>-->
+        <!--    <artifactId>spring-cloud-starter-openfeign</artifactId>-->
+        <!--    <version>3.1.4</version>-->
+        <!--</dependency>-->
+        <!--<dependency>-->
+        <!--    <groupId>com.alibaba</groupId>-->
+        <!--    <artifactId>fastjson</artifactId>-->
+        <!--    <version>1.2.73</version>-->
+        <!--</dependency>-->
     </dependencies>
 
-<!--    <build>-->
-<!--        &lt;!&ndash; 更新proto时放开 &ndash;&gt;-->
-<!--        <extensions>-->
-<!--            <extension>-->
-<!--                <groupId>kr.motd.maven</groupId>-->
-<!--                <artifactId>os-maven-plugin</artifactId>-->
-<!--                <version>1.6.2</version>-->
-<!--            </extension>-->
-<!--        </extensions>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.xolstice.maven.plugins</groupId>-->
-<!--                <artifactId>protobuf-maven-plugin</artifactId>-->
-<!--                <version>0.6.1</version>-->
-<!--                <configuration>-->
-<!--                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}-->
-<!--                    </protocArtifact>-->
-<!--                    <pluginId>grpc-java</pluginId>-->
-<!--                    <pluginArtifact>-->
-<!--                        io.grpc:protoc-gen-grpc-java:${protoc-gen-grpc-java.version}:exe:${os.detected.classifier}-->
-<!--                    </pluginArtifact>-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>compile</goal>-->
-<!--                            <goal>compile-custom</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </build>-->
+    <profiles>
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <failOnError>false</failOnError>
+                            <charset>UTF-8</charset>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>sonatype-oss</serverId>
+                            <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                            <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>sonatype-oss</id>
+                    <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
+                </snapshotRepository>
+                <repository>
+                    <id>sonatype-oss</id>
+                    <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+    </profiles>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.6.2</version>
+            </extension>
+        </extensions>
+
+        <plugins>
+            <!-- 更新proto时放开 -->
+            <!--<plugin>-->
+            <!--    <groupId>org.xolstice.maven.plugins</groupId>-->
+            <!--    <artifactId>protobuf-maven-plugin</artifactId>-->
+            <!--    <version>0.6.1</version>-->
+            <!--    <configuration>-->
+            <!--        <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}-->
+            <!--        </protocArtifact>-->
+            <!--        <pluginId>grpc-java</pluginId>-->
+            <!--        <pluginArtifact>-->
+            <!--            io.grpc:protoc-gen-grpc-java:${protoc-gen-grpc-java.version}:exe:${os.detected.classifier}-->
+            <!--        </pluginArtifact>-->
+            <!--    </configuration>-->
+            <!--    <executions>-->
+            <!--        <execution>-->
+            <!--            <goals>-->
+            <!--                <goal>compile</goal>-->
+            <!--                <goal>compile-custom</goal>-->
+            <!--            </goals>-->
+            <!--        </execution>-->
+            <!--    </executions>-->
+            <!--</plugin>-->
+        </plugins>
+    </build>
 </project>
